@@ -1,65 +1,58 @@
-# CVE-2023-3460: Unauthenticated Privilege Escalation in WordPress Ultimate Member Plugin
+# Project: CVE-2023-3460 WordPress Privilege Escalation Assessment
 
-## Overview
-This repository documents a hands-on security assessment and proof-of-concept (PoC) demonstration for **CVE-2023-3460**, an unauthenticated privilege escalation vulnerability affecting the WordPress **Ultimate Member** plugin (versions < 2.6.7). 
-
-The vulnerability stems from how WordPress handles user metadata keys. Attackers can manipulate requests during registration to inject restricted meta-keys—specifically `wp_capabilities`—allowing an unauthenticated user to register and elevate privileges to an **Administrator** or **Editor** role.
+## 📋 Executive Summary
+Completed a hands-on cybersecurity training assignment with KreativStorm to investigate and exploit CVE-2023-3460, an unauthenticated privilege escalation vulnerability affecting the WordPress Ultimate Member plugin (< 2.6.7). Utilized Burp Suite and request parameter manipulation to inject restricted meta-keys (`wp_capabilities`), successfully escalating privileges to an administrative role to retrieve the hidden flag from the restricted homepage.
 
 ---
 
-## Technical Summary
-* **Vulnerability Type:** Unauthenticated Privilege Escalation / Improper Meta-Data Handling
-* **Affected Software:** WordPress Ultimate Member Plugin (< 2.6.7)
-* **Target Objective:** Perform a privilege escalation attack to acquire elevated privileges (Editor/Administrator) and retrieve the hidden flag from the restricted home page.
-* **Primary Tools Used:** Burp Suite (Proxy & Repeater), Web Browser
+## 🛠️ Architecture & Tech Stack
+* **Target Environment:** Local WordPress test environment / Web Application (`https://test1.mohammadlotfi.com`)
+* **Vulnerable Component:** WordPress Ultimate Member Plugin (< 2.6.7)
+* **Exploitation & Interception Tool:** Burp Suite (Proxy and Repeater modules)
+* **Supporting Tools:** Web Browser, URL Decoder, Unserialize tools
 
 ---
 
-## Methodology & Attack Walkthrough
+## ⚙️ Step-by-Step Implementation
 
-1. **Reconnaissance & Target Analysis:**
-   * Investigated the target web application (`https://test1.mohammadlotfi.com`).
-   * Identified restricted content sections requiring an elevated role (such as `editor` or `administrator`) to view the hidden flag.
+### Step 1: Environment Setup & Reconnaissance
+* Investigated the target web application and identified restricted content sections that required an elevated role (`editor`) to view the hidden flag.
+* Reviewed the source code and vulnerability proof-of-concept guidelines detailing how improper meta-data handling permits attackers to update restricted fields like `wp_capabilities`.
 
-2. **Baseline Registration (Normal User):**
-   * Registered a standard user account through the web interface (e.g., username `olivias`) to analyze standard traffic patterns and form parameters.
+```bash
+# Example reference structure for vulnerability analysis mapping via WPScan advisory
+https://wpscan.com/vulnerability/694235c7-4469-4ffd-a722-9225b19e98d7/
+```
 
-3. **Intercepting Requests with Burp Suite:**
-   * Configured Burp Suite to intercept HTTP traffic.
-   * Captured the registration and login POST requests to analyze parameter formatting, nonces, and user metadata fields.
+### Step 2: Baseline Registration & Traffic Interception
+* Registered a standard user account through the web interface (e.g., username `olivias`) to understand standard parameter behavior.
+* Configured Burp Suite as an intercepting proxy to capture login and registration POST requests.
+* Analyzed the captured parameters, form nonces, and metadata fields to prepare for payload injection.
 
-4. **Exploitation via Parameter Manipulation:**
-   * Registered a secondary test account while intercepting the request in Burp Suite.
-   * Modified the POST request parameters to target user roles, mimicking the vulnerability structure outlined in the official advisory.
-   * Forwarded the manipulated request to Burp Suite Repeater to adjust role assignment values to `editor`.
+### Step 3: Parameter Manipulation & Privilege Escalation
+* Initiated a secondary registration attempt while intercepting the traffic in Burp Suite.
+* Copied and modified the POST request parameters, replacing standard user variables to target role assignments.
+* Forwarded the modified request to Burp Suite Repeater, altering the parameters to map user roles to an `editor` privilege level.
 
-5. **Verification:**
-   * Re-sent the crafted payload to validate server responses (`HTTP 200 OK`) and confirm successful privilege escalation.
-
----
-
-## Getting Started & Prerequisites
-
-To replicate this environment for educational and testing purposes locally:
-
-### Prerequisites
-* **Local Server Environment:** XAMPP (or local equivalent)
-* **CMS:** WordPress (vulnerable version installed with the Ultimate Member plugin < 2.6.7)
-* **Interceptor:** Burp Suite (Community or Professional Edition)
-
-### Execution Steps
-1. Spin up your local WordPress test environment.
-2. Configure your browser proxy to route traffic through Burp Suite.
-3. Navigate to the plugin registration page and follow the parameter manipulation steps outlined in the assessment documentation.
+### Step 4: Verification & Flag Retrieval
+* Sent the crafted payload and verified the server response (`HTTP 200 OK`) to confirm successful execution of the vulnerability.
+* Authenticated using the escalated credentials to bypass access controls and retrieve the target flag from the restricted homepage.
 
 ---
 
-## Keywords
-`Unauthenticated Privilege Escalation`, `WordPress`, `Burp Suite`, `Ultimate Member Plugin`, `CVE-2023-3460`, `KreativStorm`
+## 🧪 Testing & Validation
+* Validated the exploit workflow by observing how unauthenticated user registration inputs processed metadata without adequate sanitization.
+* Confirmed that injecting `wp_capabilities` during the registration lifecycle successfully bypassed default role assignment constraints.
 
 ---
 
-## References & Resources
-1. [WPScan Vulnerability Database: CVE-2023-3460](https://wpscan.com/vulnerability/694235c7-4469-4ffd-a722-9225b19e98d7/)
-2. [Online URL Decoder](https://www.urldecoder.org)
-3. [Online Unserialize Tool](https://www.unserialize.com/)
+## 💡 Key Learnings & Challenges
+* **Challenge:** Understanding how WordPress treats metadata keys and how improper validation can allow unauthorized modification of sensitive attributes like `wp_capabilities`.
+* **Solution:** Used Burp Suite Proxy and Repeater to precisely isolate, modify, and replay registration POST parameters.
+* **Key Takeaway:** Gained a practical understanding of unauthenticated privilege escalation mechanics in content management systems and the importance of secure meta-data handling.
+
+---
+
+## 🚀 Future Improvements
+* Implement automated vulnerability scanning to detect outdated WordPress plugins in staging environments.
+* Explore remediation strategies by patching the Ultimate Member plugin to version 2.6.7 or higher and enforcing strict Role-Based Access Control (RBAC).
